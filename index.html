@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Indigo Stream | Video Link Player</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary: #6366f1; /* Indigo 500 */
+            --primary-hover: #4f46e5;
+            --bg-dark: #0f172a;
+            --player-bg: #1e1b4b;
+            --text-light: #e0e7ff;
+            --accent: #818cf8;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            width: 100%;
+        }
+
+        /* --- Input Section --- */
+        .input-card {
+            background: rgba(30, 27, 75, 0.5);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            padding: 25px;
+            border-radius: 16px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 12px 18px;
+            border-radius: 8px;
+            border: 1px solid var(--primary);
+            background: rgba(15, 23, 42, 0.8);
+            color: white;
+            outline: none;
+            min-width: 280px;
+        }
+
+        button {
+            padding: 12px 25px;
+            border-radius: 8px;
+            border: none;
+            background: var(--primary);
+            color: white;
+            cursor: pointer;
+            font-weight: 600;
+            transition: 0.3s;
+        }
+
+        button:hover {
+            background: var(--primary-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(99, 102, 241, 0.4);
+        }
+
+        /* --- Player Section --- */
+        .video-wrapper {
+            position: relative;
+            background: #000;
+            border-radius: 16px;
+            overflow: hidden;
+            border: 2px solid var(--primary);
+            box-shadow: 0 0 40px rgba(99, 102, 241, 0.2);
+            aspect-ratio: 16 / 9;
+            width: 100%;
+        }
+
+        video {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Custom Controls Overlay */
+        .custom-controls {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(transparent, rgba(15, 23, 42, 0.9));
+            padding: 20px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .video-wrapper:hover .custom-controls {
+            opacity: 1;
+        }
+
+        .progress-area {
+            height: 5px;
+            background: rgba(255,255,255,0.2);
+            cursor: pointer;
+            position: relative;
+            border-radius: 5px;
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background: var(--primary);
+            border-radius: 5px;
+            position: relative;
+        }
+
+        .progress-bar::after {
+            content: '';
+            position: absolute;
+            right: -5px;
+            top: -4px;
+            width: 12px;
+            height: 12px;
+            background: white;
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--primary);
+        }
+
+        .control-buttons {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            color: white;
+        }
+
+        .left-controls, .right-controls {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .control-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 0;
+        }
+
+        .control-btn:hover {
+            color: var(--accent);
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* --- Anime Specific UI --- */
+        .anime-badge {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(99, 102, 241, 0.8);
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            pointer-events: none;
+        }
+
+        .skip-intro {
+            position: absolute;
+            bottom: 80px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            border: 1px solid var(--primary);
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            display: none;
+            font-size: 0.9rem;
+        }
+
+        /* --- Embed Section --- */
+        .embed-section {
+            margin-top: 30px;
+            background: rgba(30, 27, 75, 0.3);
+            padding: 20px;
+            border-radius: 12px;
+        }
+
+        .embed-code {
+            background: #070a13;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 0.85rem;
+            color: var(--accent);
+            margin-top: 10px;
+            word-break: break-all;
+            border-left: 4px solid var(--primary);
+        }
+
+        .settings-menu {
+            position: absolute;
+            bottom: 70px;
+            right: 20px;
+            background: rgba(15, 23, 42, 0.95);
+            padding: 15px;
+            border-radius: 8px;
+            display: none;
+            flex-direction: column;
+            gap: 10px;
+            border: 1px solid var(--primary);
+        }
+
+        .settings-menu.active { display: flex; }
+
+        select {
+            background: #0f172a;
+            color: white;
+            border: 1px solid var(--primary);
+            padding: 5px;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- Input Form -->
+        <div class="input-card">
+            <h1><i class="fas fa-play-circle"></i> Anime Stream Link Creator</h1>
+            <div class="input-group">
+                <input type="text" id="videoUrl" placeholder="Paste direct .mp4, .webm or video link here...">
+                <button onclick="loadVideo()"><i class="fas fa-magic"></i> Generate Player</button>
+            </div>
+        </div>
+
+        <!-- Video Player -->
+        <div class="video-wrapper" id="videoContainer">
+            <div class="anime-badge">Now Playing: Indigo Stream</div>
+            
+            <video id="mainVideo" preload="metadata">
+                <source src="" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+
+            <button class="skip-intro" id="skipIntro" onclick="skipIntro()">Skip Intro +1:30</button>
+
+            <!-- Custom Controls -->
+            <div class="custom-controls">
+                <div class="progress-area" id="progressArea">
+                    <div class="progress-bar" id="progressBar"></div>
+                </div>
+
+                <div class="control-buttons">
+                    <div class="left-controls">
+                        <button class="control-btn" id="playPauseBtn"><i class="fas fa-play"></i></button>
+                        <button class="control-btn" onclick="seek(-10)"><i class="fas fa-backward"></i></button>
+                        <button class="control-btn" onclick="seek(10)"><i class="fas fa-forward"></i></button>
+                        <div class="volume-container">
+                            <button class="control-btn" id="muteBtn"><i class="fas fa-volume-up"></i></button>
+                        </div>
+                        <span id="timeDisplay">0:00 / 0:00</span>
+                    </div>
+
+                    <div class="right-controls">
+                        <button class="control-btn" onclick="takeScreenshot()" title="Take Screenshot"><i class="fas fa-camera"></i></button>
+                        <button class="control-btn" onclick="toggleSettings()" title="Settings"><i class="fas fa-cog"></i></button>
+                        <button class="control-btn" id="fullScreenBtn"><i class="fas fa-expand"></i></button>
+                    </div>
+                </div>
+
+                <!-- Settings Popup -->
+                <div class="settings-menu" id="settingsMenu">
+                    <label>Playback Speed</label>
+                    <select id="speedSelect" onchange="changeSpeed()">
+                        <option value="0.5">0.5x</option>
+                        <option value="1" selected>Normal</option>
+                        <option value="1.5">1.5x</option>
+                        <option value="2">2x</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Embed Code Tool -->
+        <div class="embed-section" id="embedSection" style="display: none;">
+            <h3><i class="fas fa-code"></i> Embed this Player</h3>
+            <p style="font-size: 0.8rem; margin-bottom: 10px; opacity: 0.8;">Copy the code below to use this player on your anime site.</p>
+            <div class="embed-code" id="embedCodeDisplay"></div>
+            <button onclick="copyEmbed()" style="margin-top: 10px; padding: 8px 15px; font-size: 0.8rem;">Copy Code</button>
+        </div>
+    </div>
+
+    <script>
+        const video = document.getElementById('mainVideo');
+        const playPauseBtn = document.getElementById('playPauseBtn');
+        const progressBar = document.getElementById('progressBar');
+        const progressArea = document.getElementById('progressArea');
+        const timeDisplay = document.getElementById('timeDisplay');
+        const skipBtn = document.getElementById('skipIntro');
+        const settingsMenu = document.getElementById('settingsMenu');
+
+        // Load Video Function
+        function loadVideo() {
+            const url = document.getElementById('videoUrl').value;
+            if(!url) return alert("Please paste a link first!");
+
+            video.src = url;
+            video.load();
+            
+            // Show Embed Section
+            document.getElementById('embedSection').style.display = 'block';
+            const embedHtml = `<iframe src="${window.location.href}?v=${encodeURIComponent(url)}" width="100%" height="450px" frameborder="0" allowfullscreen></iframe>`;
+            document.getElementById('embedCodeDisplay').innerText = embedHtml;
+            
+            video.play();
+            playPauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
+        }
+
+        // Play/Pause
+        playPauseBtn.addEventListener('click', () => {
+            if (video.paused) {
+                video.play();
+                playPauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
+            } else {
+                video.pause();
+                playPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
+            }
+        });
+
+        // Progress Bar
+        video.addEventListener('timeupdate', () => {
+            const percentage = (video.currentTime / video.duration) * 100;
+            progressBar.style.width = `${percentage}%`;
+            
+            // Show Skip Intro button between 0-2 minutes
+            if(video.currentTime > 5 && video.currentTime < 90) {
+                skipBtn.style.display = 'block';
+            } else {
+                skipBtn.style.display = 'none';
+            }
+
+            // Update Time
+            let curMins = Math.floor(video.currentTime / 60);
+            let curSecs = Math.floor(video.currentTime % 60);
+            let durMins = Math.floor(video.duration / 60) || 0;
+            let durSecs = Math.floor(video.duration % 60) || 0;
+            
+            if(curSecs < 10) curSecs = "0"+curSecs;
+            if(durSecs < 10) durSecs = "0"+durSecs;
+            
+            timeDisplay.innerText = `${curMins}:${curSecs} / ${durMins}:${durSecs}`;
+        });
+
+        // Seek on Click
+        progressArea.addEventListener('click', (e) => {
+            const rect = progressArea.getBoundingClientRect();
+            const pos = (e.pageX - rect.left) / rect.width;
+            video.currentTime = pos * video.duration;
+        });
+
+        // Skip/Back
+        function seek(seconds) {
+            video.currentTime += seconds;
+        }
+
+        function skipIntro() {
+            video.currentTime += 90;
+        }
+
+        // Speed
+        function changeSpeed() {
+            video.playbackRate = document.getElementById('speedSelect').value;
+        }
+
+        function toggleSettings() {
+            settingsMenu.classList.toggle('active');
+        }
+
+        // Fullscreen
+        document.getElementById('fullScreenBtn').addEventListener('click', () => {
+            if (video.requestFullscreen) video.requestFullscreen();
+            else if (video.webkitRequestFullscreen) video.webkitRequestFullscreen();
+        });
+
+        // Mute
+        document.getElementById('muteBtn').addEventListener('click', (e) => {
+            video.muted = !video.muted;
+            e.target.closest('button').innerHTML = video.muted ? '<i class="fas fa-volume-mute"></i>' : '<i class="fas fa-volume-up"></i>';
+        });
+
+        // Screenshot
+        function takeScreenshot() {
+            const canvas = document.createElement('canvas');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            const link = document.createElement('a');
+            link.download = 'anime-screenshot.png';
+            link.href = canvas.toDataURL();
+            link.click();
+        }
+
+        // Keyboard Shortcuts
+        window.addEventListener('keydown', (e) => {
+            if(e.code === 'Space') {
+                e.preventDefault();
+                playPauseBtn.click();
+            }
+            if(e.code === 'ArrowRight') seek(10);
+            if(e.code === 'ArrowLeft') seek(-10);
+            if(e.code === 'KeyM') document.getElementById('muteBtn').click();
+        });
+
+        function copyEmbed() {
+            const text = document.getElementById('embedCodeDisplay').innerText;
+            navigator.clipboard.writeText(text);
+            alert("Embed code copied!");
+        }
+
+        // Handle URL Params (For when used as an iframe)
+        window.onload = () => {
+            const params = new URLSearchParams(window.location.search);
+            const vUrl = params.get('v');
+            if(vUrl) {
+                document.getElementById('videoUrl').value = vUrl;
+                loadVideo();
+            }
+        };
+    </script>
+</body>
+         </html>                 </html></html>
