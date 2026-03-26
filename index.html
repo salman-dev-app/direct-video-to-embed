@@ -3,260 +3,232 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Indigo Pro V4 | Anime Player</title>
+    <title>Indigo Pro V6 | Anime Player</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
     
     <style>
         :root {
-            --indigo: #6366f1;
-            --indigo-glow: rgba(99, 102, 241, 0.4);
-            --bg: #0b0e14;
-            --surface: #161b22;
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --bg-dark: #0f172a;
+            --surface: #1e293b;
+            --text: #f8fafc;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; -webkit-tap-highlight-color: transparent; }
-        body, html { width: 100%; height: 100%; background: var(--bg); color: #fff; overflow: hidden; }
+        body, html { width: 100%; height: 100%; background: #000; color: var(--text); overflow: hidden; }
 
-        /* --- GENERATOR SCREEN --- */
-        #gen-screen {
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            height: 100vh; padding: 20px; text-align: center; background: radial-gradient(circle at center, #1e1b4b 0%, #0b0e14 100%);
-        }
-        .card {
-            background: var(--surface); padding: 40px; border-radius: 24px;
-            border: 1px solid var(--indigo); width: 100%; max-width: 550px;
-            box-shadow: 0 0 50px rgba(0,0,0,0.8);
-        }
-        input {
-            width: 100%; padding: 15px; background: #000; border: 1px solid #333;
-            color: white; border-radius: 12px; margin: 20px 0; outline: none; transition: 0.3s;
-        }
-        input:focus { border-color: var(--indigo); box-shadow: 0 0 10px var(--indigo-glow); }
-        .btn {
-            background: var(--indigo); color: white; border: none; padding: 15px 30px;
-            border-radius: 10px; font-weight: 600; cursor: pointer; width: 100%; transition: 0.3s;
-        }
-        .btn:hover { background: #4f46e5; transform: translateY(-2px); }
-        .output-box { margin-top: 20px; display: none; text-align: left; background: #000; padding: 15px; border-radius: 10px; border: 1px dashed var(--indigo); }
+        /* --- GENERATOR (Only for you) --- */
+        #gen-ui { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; background: var(--bg-dark); padding: 20px; }
+        .gen-card { background: var(--surface); padding: 30px; border-radius: 20px; border: 1px solid var(--primary); width: 100%; max-width: 500px; text-align: center; box-shadow: 0 0 40px rgba(0,0,0,0.5); }
+        input { width: 100%; padding: 12px; margin: 15px 0; background: #000; border: 1px solid #334155; color: #fff; border-radius: 8px; outline: none; }
+        .btn-gen { background: var(--primary); color: #fff; border: none; padding: 12px 25px; border-radius: 8px; cursor: pointer; font-weight: 600; width: 100%; transition: 0.3s; }
+        .btn-gen:hover { background: var(--primary-dark); }
 
-        /* --- PLAYER SCREEN --- */
-        #player-box {
-            display: none; width: 100vw; height: 100vh; background: #000; position: relative;
-        }
+        /* --- PLAYER --- */
+        #player-container { display: none; width: 100vw; height: 100vh; background: #000; position: relative; }
         video { width: 100%; height: 100%; object-fit: contain; }
 
-        /* Controls UI Overlay */
-        .overlay {
+        /* UI OVERLAY */
+        .ui-overlay {
             position: absolute; inset: 0; z-index: 10;
-            background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, transparent 40%);
+            background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, transparent 40%);
             display: flex; flex-direction: column; justify-content: flex-end;
-            padding: 20px; transition: opacity 0.4s ease;
+            padding: 15px 20px; transition: opacity 0.4s;
         }
-        .hide-ui { opacity: 0; cursor: none; }
+        .ui-hidden { opacity: 0; cursor: none; }
 
-        /* Progress Bar */
-        .p-bar-base { width: 100%; height: 6px; background: rgba(255,255,255,0.15); border-radius: 10px; cursor: pointer; margin-bottom: 15px; position: relative; }
-        .p-bar-fill { height: 100%; width: 0%; background: var(--indigo); border-radius: 10px; box-shadow: 0 0 15px var(--indigo); transition: width 0.1s linear; }
+        /* PROGRESS BAR */
+        .progress-wrap { width: 100%; height: 5px; background: rgba(255,255,255,0.2); border-radius: 10px; cursor: pointer; margin-bottom: 12px; }
+        .progress-fill { height: 100%; width: 0%; background: var(--primary); border-radius: 10px; box-shadow: 0 0 12px var(--primary); transition: width 0.1s linear; }
 
-        /* Buttons Row */
-        .controls-row { display: flex; align-items: center; justify-content: space-between; }
-        .btn-grp { display: flex; align-items: center; gap: 20px; }
-        .icon { background: none; border: none; color: white; font-size: 1.4rem; cursor: pointer; transition: 0.2s; text-shadow: 0 0 10px rgba(0,0,0,0.5); }
-        .icon:hover { color: var(--indigo); transform: scale(1.1); }
-        .time { font-size: 0.85rem; font-weight: 500; min-width: 100px; opacity: 0.9; }
+        /* BOTTOM BAR */
+        .bottom-bar { display: flex; align-items: center; justify-content: space-between; }
+        .group { display: flex; align-items: center; gap: 20px; }
+        .icon-btn { background: none; border: none; color: #fff; font-size: 1.3rem; cursor: pointer; transition: 0.2s; }
+        .icon-btn:hover { color: var(--primary); transform: scale(1.1); }
+        .time-info { font-size: 0.85rem; opacity: 0.9; min-width: 100px; }
 
-        /* Gesture Feedback (Ripples) */
+        /* --- SETTINGS MENU --- */
+        .settings-menu {
+            position: absolute; bottom: 80px; right: 20px;
+            background: #111827; border: 1px solid var(--primary);
+            border-radius: 16px; width: 240px; display: none;
+            flex-direction: column; overflow: hidden; z-index: 100;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.7);
+        }
+        .settings-menu.active { display: flex; animation: slideIn 0.2s ease-out; }
+        .m-head { padding: 12px 15px; background: var(--primary); color: #fff; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
+        
+        .m-item {
+            padding: 14px 18px; display: flex; justify-content: space-between; align-items: center;
+            font-size: 0.9rem; color: #fff; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.05);
+            background: #111827; transition: 0.2s;
+        }
+        .m-item:hover { background: #1f2937; }
+        .m-item span { color: var(--primary); font-weight: 600; font-size: 0.85rem; }
+        .m-item i { width: 20px; text-align: center; font-size: 0.9rem; }
+
+        /* DOUBLE TAP RIPPLES */
         .ripple {
             position: absolute; top: 50%; transform: translateY(-50%);
-            width: 100px; height: 100px; background: var(--indigo-glow);
+            width: 90px; height: 90px; background: rgba(99, 102, 241, 0.3);
             border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center;
-            font-size: 1.2rem; opacity: 0; pointer-events: none; transition: 0.4s; z-index: 5;
+            opacity: 0; pointer-events: none; transition: 0.4s; z-index: 5;
         }
-        .ripple i { margin-bottom: 5px; }
-        .ripple span { font-size: 0.7rem; font-weight: bold; }
-        .ripple-left { left: 10%; }
-        .ripple-right { right: 10%; }
+        .rip-l { left: 15%; } .rip-r { right: 15%; }
         .ripple.active { opacity: 1; transform: translateY(-50%) scale(1.3); }
+        .ripple span { font-size: 0.7rem; font-weight: 900; margin-top: 5px; }
 
-        /* Settings Menu */
-        .menu {
-            position: absolute; bottom: 85px; right: 20px; background: rgba(22, 27, 34, 0.95);
-            backdrop-filter: blur(15px); border: 1px solid var(--indigo); border-radius: 15px; width: 240px;
-            display: none; flex-direction: column; overflow: hidden; z-index: 20; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-        }
-        .menu.active { display: flex; animation: slideUp 0.3s forwards; }
-        .m-header { padding: 12px; font-size: 0.7rem; font-weight: 800; background: var(--indigo); color: #fff; letter-spacing: 1px; }
-        .m-item { padding: 12px 18px; font-size: 0.9rem; cursor: pointer; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.05); }
-        .m-item:hover { background: var(--indigo); }
-
-        /* Speed Indicator */
         #speed-hint {
             position: absolute; top: 30px; left: 50%; transform: translateX(-50%);
-            background: rgba(99, 102, 241, 0.8); padding: 6px 18px; border-radius: 30px;
-            font-size: 0.8rem; font-weight: bold; display: none; z-index: 100; box-shadow: 0 0 20px var(--indigo-glow);
+            background: var(--primary); padding: 6px 18px; border-radius: 30px;
+            font-size: 0.8rem; font-weight: bold; display: none; z-index: 100; box-shadow: 0 0 15px var(--primary);
         }
 
-        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* PORTRAIT ADJUSTMENT */
+        @media (max-width: 600px) {
+            .settings-menu { right: 10px; bottom: 75px; width: 220px; }
+            .time-info { font-size: 0.75rem; min-width: 80px; }
+        }
     </style>
 </head>
 <body>
 
-    <!-- SECTION 1: EMBED GENERATOR -->
-    <div id="gen-screen">
-        <div class="card">
-            <h1 style="color:var(--indigo)">Indigo Link Creator</h1>
-            <p style="opacity:0.6; font-size:0.9rem; margin-top:5px;">Professional Anime Player Engine</p>
-            
-            <input type="text" id="userInput" placeholder="Paste direct video link (.mp4, .m3u8, etc.)">
-            
-            <button class="btn" onclick="buildLink()">Generate Player & Embed</button>
-            
-            <div class="output-box" id="output">
-                <span style="font-size:0.7rem; color:var(--indigo); font-weight:bold;">IFRAME EMBED CODE:</span>
-                <div id="resCode" style="font-family:monospace; font-size:0.75rem; word-break:break-all; margin:10px 0; color:#ccc;"></div>
-                <button class="btn" style="padding:8px; font-size:0.8rem;" onclick="copyRes()">Copy Embed Code</button>
-            </div>
+    <!-- GENERATOR SECTION -->
+    <div id="gen-ui">
+        <div class="gen-card">
+            <h2 style="color:var(--primary)">Indigo Pro Engine</h2>
+            <input type="text" id="urlInput" placeholder="Paste Direct Anime Link (.mp4, .m3u8)">
+            <button class="btn-gen" onclick="generate()">Generate Link & Code</button>
+            <div id="outputCode" style="margin-top:20px; display:none; background:#000; padding:15px; border-radius:8px; font-size:0.7rem; word-break:break-all; border:1px dashed var(--primary); color:#cbd5e1;"></div>
         </div>
     </div>
 
-    <!-- SECTION 2: THE PLAYER -->
-    <div id="player-box">
-        <video id="vid" crossorigin="anonymous" playsinline>
+    <!-- PLAYER SECTION -->
+    <div id="player-container">
+        <video id="mainVid" playsinline crossorigin="anonymous">
             <source src="" type="video/mp4">
         </video>
 
-        <!-- Dynamic Feedback UI -->
-        <div class="ripple ripple-left" id="ripL"><i class="fas fa-backward"></i><span>10s</span></div>
-        <div class="ripple ripple-right" id="ripR"><i class="fas fa-forward"></i><span>10s</span></div>
-        <div id="speed-hint">2x SPEED ACTIVE</div>
+        <!-- Feedback UI -->
+        <div class="ripple rip-l" id="ripL"><i class="fas fa-backward"></i><span>10S</span></div>
+        <div class="ripple rip-r" id="ripR"><i class="fas fa-forward"></i><span>10S</span></div>
+        <div id="speed-hint">2X FAST FORWARD</div>
 
-        <!-- Player Controls Overlay -->
-        <div class="overlay" id="ui">
-            <div class="p-bar-base" id="pBase">
-                <div class="p-bar-fill" id="pFill"></div>
+        <div class="ui-overlay" id="ui">
+            <div class="progress-wrap" id="pWrap">
+                <div class="progress-fill" id="pFill"></div>
             </div>
 
-            <div class="controls-row">
-                <div class="btn-grp">
-                    <button class="icon" id="playBtn"><i class="fas fa-play"></i></button>
-                    <button class="icon" onclick="skip(-10, 'L')" title="Rewind 10s"><i class="fas fa-undo"></i></button>
-                    <button class="icon" onclick="skip(10, 'R')" title="Forward 10s"><i class="fas fa-redo"></i></button>
-                    <span class="time" id="timeDisplay">00:00 / 00:00</span>
+            <div class="bottom-bar">
+                <div class="group">
+                    <button class="icon-btn" id="playToggle"><i class="fas fa-play"></i></button>
+                    <div class="time-info"><span id="currT">00:00</span> / <span id="durT">00:00</span></div>
                 </div>
-
-                <div class="btn-grp">
-                    <button class="icon" onclick="toggleMenu()" title="Audio & Settings"><i class="fas fa-sliders-h"></i></button>
-                    <button class="icon" onclick="handleFS()" title="Fullscreen"><i class="fas fa-expand"></i></button>
+                <div class="group">
+                    <button class="icon-btn" onclick="toggleMenu()"><i class="fas fa-sliders-h"></i></button>
+                    <button class="icon-btn" onclick="toggleFS()"><i class="fas fa-expand"></i></button>
                 </div>
             </div>
         </div>
 
-        <!-- Settings Context Menu -->
-        <div class="menu" id="menu">
-            <div class="m-header">PLAYER CONFIGURATION</div>
-            <div id="audioTracksContainer">
-                <div class="m-item">Default Audio Track <i class="fas fa-check" style="font-size:0.7rem"></i></div>
+        <!-- NEW SETTINGS MENU (Includes Skips) -->
+        <div class="settings-menu" id="setMenu">
+            <div class="m-head">Player Settings</div>
+            
+            <div class="m-item" onclick="seekManual(-10)">Rewind 10s <i class="fas fa-undo"></i></div>
+            <div class="m-item" onclick="seekManual(10)">Forward 10s <i class="fas fa-redo"></i></div>
+            
+            <div class="m-item" onclick="changeSpeed()">Playback Speed <span id="spText">1.0x</span></div>
+            
+            <div id="audioGroup">
+                <div class="m-item">Default Audio <i class="fas fa-check" style="color:var(--primary)"></i></div>
             </div>
-            <div class="m-item" onclick="changeSpeed()">Playback Speed <span id="speedVal" style="color:var(--indigo); font-weight:bold;">1.0x</span></div>
-            <div class="m-item" onclick="takePhoto()">Save Frame (SS) <i class="fas fa-camera"></i></div>
+            
+            <div class="m-item" onclick="takeSnapshot()">Capture Frame <i class="fas fa-camera"></i></div>
         </div>
     </div>
 
     <script>
-        const vid = document.getElementById('vid');
+        const vid = document.getElementById('mainVid');
+        const playBtn = document.getElementById('playToggle');
         const ui = document.getElementById('ui');
         const pFill = document.getElementById('pFill');
-        const pBase = document.getElementById('pBase');
-        const playBtn = document.getElementById('playBtn');
 
-        // 1. LINK GENERATOR ENGINE
-        function buildLink() {
-            const url = document.getElementById('userInput').value;
-            if(!url) return alert("Please enter a valid link!");
-            const finalURL = window.location.href.split('?')[0] + "?v=" + encodeURIComponent(url);
-            document.getElementById('resCode').innerText = `<iframe src="${finalURL}" width="100%" height="500px" frameborder="0" allowfullscreen></iframe>`;
-            document.getElementById('output').style.display = 'block';
+        // 1. EMBED GENERATOR
+        function generate() {
+            const input = document.getElementById('urlInput').value;
+            if(!input) return alert("Paste a link first!");
+            const playerUrl = window.location.href.split('?')[0] + "?v=" + encodeURIComponent(input);
+            const iframe = `<iframe src="${playerUrl}" width="100%" height="450px" frameborder="0" allowfullscreen></iframe>`;
+            document.getElementById('outputCode').innerText = iframe;
+            document.getElementById('outputCode').style.display = 'block';
         }
 
-        function copyRes() {
-            navigator.clipboard.writeText(document.getElementById('resCode').innerText);
-            alert("Embed code copied to clipboard!");
-        }
-
-        // 2. PLAYER INITIALIZATION
+        // 2. PLAYER INIT
         window.onload = () => {
             const params = new URLSearchParams(window.location.search);
             const vUrl = params.get('v');
             if(vUrl) {
-                document.getElementById('gen-screen').style.display = 'none';
-                document.getElementById('player-box').style.display = 'block';
+                document.getElementById('gen-ui').style.display = 'none';
+                document.getElementById('player-container').style.display = 'block';
                 vid.src = vUrl;
                 vid.load();
-                setupAudioSystem();
+                setupAudio();
             }
         };
 
-        // 3. GESTURES: DOUBLE-TAP & LONG-PRESS (Youtube Style)
-        let lastTapTime = 0;
-        let pressTimer;
+        // 3. GESTURES (Double Tap & Long Press)
+        let lastTap = 0;
+        let pTimer;
 
         vid.addEventListener('touchstart', (e) => {
             const now = Date.now();
-            const tapGap = now - lastTapTime;
-            const xCoord = e.touches[0].clientX;
-            const screenWidth = window.innerWidth;
-
-            if (tapGap < 300) {
-                // Double Tap Action
-                if (xCoord < screenWidth / 2) skip(-10, 'L');
-                else skip(10, 'R');
+            const x = e.touches[0].clientX;
+            const w = window.innerWidth;
+            
+            if(now - lastTap < 300) {
+                if(x < w/2) seekManual(-10, 'ripL'); else seekManual(10, 'ripR');
                 e.preventDefault();
             }
-            lastTapTime = now;
+            lastTap = now;
 
-            // Long Press for 2x Speed
-            pressTimer = setTimeout(() => {
-                vid.playbackRate = 2.0;
+            pTimer = setTimeout(() => {
+                vid.playbackRate = 2;
                 document.getElementById('speed-hint').style.display = 'block';
             }, 500);
         });
 
         vid.addEventListener('touchend', () => {
-            clearTimeout(pressTimer);
-            vid.playbackRate = 1.0;
+            clearTimeout(pTimer);
+            vid.playbackRate = 1;
             document.getElementById('speed-hint').style.display = 'none';
         });
 
-        // Mouse double-click support
-        vid.addEventListener('dblclick', (e) => {
-            if (e.clientX < window.innerWidth / 2) skip(-10, 'L');
-            else skip(10, 'R');
-        });
-
-        function skip(seconds, side) {
-            vid.currentTime += seconds;
-            const rip = document.getElementById(side === 'L' ? 'ripL' : 'ripR');
-            rip.classList.add('active');
-            setTimeout(() => rip.classList.remove('active'), 500);
+        function seekManual(sec, rippleId) {
+            vid.currentTime += sec;
+            if(rippleId) {
+                const r = document.getElementById(rippleId);
+                r.classList.add('active');
+                setTimeout(() => r.classList.remove('active'), 500);
+            }
         }
 
-        // 4. PLAYER CORE CONTROLS
+        // 4. CORE CONTROLS
         playBtn.onclick = togglePlay;
-        vid.onclick = () => {
-            document.getElementById('menu').classList.remove('active');
-            togglePlay();
-        };
-
         function togglePlay() {
             if(vid.paused) { vid.play(); playBtn.innerHTML='<i class="fas fa-pause"></i>'; }
             else { vid.pause(); playBtn.innerHTML='<i class="fas fa-play"></i>'; }
         }
 
         vid.ontimeupdate = () => {
-            const pct = (vid.currentTime / vid.duration) * 100;
-            pFill.style.width = pct + '%';
-            document.getElementById('timeDisplay').innerText = fmt(vid.currentTime) + " / " + fmt(vid.duration);
+            pFill.style.width = (vid.currentTime / vid.duration * 100) + '%';
+            document.getElementById('currT').innerText = fmt(vid.currentTime);
+            document.getElementById('durT').innerText = fmt(vid.duration);
         };
 
         function fmt(s) {
@@ -265,67 +237,57 @@
             return (m<10?'0'+m:m)+":"+(sec<10?'0'+sec:sec);
         }
 
-        pBase.onclick = (e) => vid.currentTime = (e.offsetX / pBase.offsetWidth) * vid.duration;
+        document.getElementById('pWrap').onclick = (e) => vid.currentTime = (e.offsetX / document.getElementById('pWrap').offsetWidth) * vid.duration;
 
-        // 5. FULLSCREEN & AUTO-ROTATE
-        async function handleFS() {
-            const box = document.getElementById('player-box');
-            if (!document.fullscreenElement) {
-                await box.requestFullscreen();
-                if (screen.orientation && screen.orientation.lock) {
-                    screen.orientation.lock('landscape').catch(() => {});
-                }
-            } else {
-                document.exitFullscreen();
-            }
+        // 5. SETTINGS FUNCTIONS
+        function toggleMenu() { document.getElementById('setMenu').classList.toggle('active'); }
+        
+        function changeSpeed() {
+            vid.playbackRate = vid.playbackRate >= 2 ? 0.5 : vid.playbackRate + 0.5;
+            document.getElementById('spText').innerText = vid.playbackRate + 'x';
         }
 
-        // 6. AUDIO TRACKS & SETTINGS
-        function setupAudioSystem() {
-            const container = document.getElementById('audioTracksContainer');
+        async function toggleFS() {
+            if(!document.fullscreenElement) {
+                await document.getElementById('player-container').requestFullscreen();
+                if(screen.orientation.lock) screen.orientation.lock('landscape').catch(()=>{});
+            } else document.exitFullscreen();
+        }
+
+        function setupAudio() {
+            const container = document.getElementById('audioGroup');
             if(vid.audioTracks && vid.audioTracks.length > 1) {
                 container.innerHTML = "";
                 for(let i=0; i<vid.audioTracks.length; i++) {
-                    const item = document.createElement('div');
-                    item.className = "m-item";
-                    item.innerText = `Audio Track ${i+1} (${vid.audioTracks[i].language})`;
-                    item.onclick = () => {
+                    const el = document.createElement('div');
+                    el.className = "m-item";
+                    el.innerHTML = `Audio track ${i+1} <span>${vid.audioTracks[i].language}</span>`;
+                    el.onclick = () => {
                         for(let j=0; j<vid.audioTracks.length; j++) vid.audioTracks[j].enabled = (i===j);
-                        alert("Audio track switched.");
+                        alert("Track Switched");
                     };
-                    container.appendChild(item);
+                    container.appendChild(el);
                 }
             }
         }
 
-        function toggleMenu() { document.getElementById('menu').classList.toggle('active'); }
-
-        function changeSpeed() {
-            vid.playbackRate = vid.playbackRate >= 2 ? 0.5 : vid.playbackRate + 0.5;
-            document.getElementById('speedVal').innerText = vid.playbackRate + 'x';
+        function takeSnapshot() {
+            const c = document.createElement('canvas');
+            c.width = vid.videoWidth; c.height = vid.videoHeight;
+            c.getContext('2d').drawImage(vid, 0, 0);
+            const a = document.createElement('a'); a.download = 'anime_snap.png'; a.href = c.toDataURL(); a.click();
         }
 
-        // 7. AUTO-HIDE UI
-        let uiTimer;
+        // UI AUTO-HIDE
+        let hideT;
         function showUI() {
-            ui.classList.remove('hide-ui');
-            clearTimeout(uiTimer);
-            if(!vid.paused) {
-                uiTimer = setTimeout(() => ui.classList.add('hide-ui'), 3000);
-            }
+            ui.classList.remove('ui-hidden');
+            clearTimeout(hideT);
+            if(!vid.paused) hideT = setTimeout(() => ui.classList.add('ui-hidden'), 3000);
         }
-        document.getElementById('player-box').onmousemove = showUI;
-        document.getElementById('player-box').ontouchstart = showUI;
-
-        function takePhoto() {
-            const canvas = document.createElement('canvas');
-            canvas.width = vid.videoWidth; canvas.height = vid.videoHeight;
-            canvas.getContext('2d').drawImage(vid, 0, 0);
-            const link = document.createElement('a');
-            link.download = 'anime_snapshot.png';
-            link.href = canvas.toDataURL();
-            link.click();
-        }
+        document.getElementById('player-container').onmousemove = showUI;
+        document.getElementById('player-container').ontouchstart = showUI;
+        vid.onclick = () => { document.getElementById('setMenu').classList.remove('active'); togglePlay(); };
     </script>
 </body>
 </html>
